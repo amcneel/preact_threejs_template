@@ -1,0 +1,19 @@
+.menu {
+	position: absolute;
+	background-color: transparent;
+	padding-left: 20px;
+	align-self: center;
+	color: white;
+}
+.menu:hover {
+	cursor: pointer;
+}
+
+.menuItem {
+	font-size: 39px;
+	padding-top: 10px;
+	font-family: fontNormal;
+}
+.menuItem:hover {
+	color: #30e1f4;
+}

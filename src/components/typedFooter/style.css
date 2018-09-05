@@ -1,0 +1,12 @@
+@font-face{
+	font-family: fontBold;
+	src: url('../../assets/webfont/GTPressuraMono-Bold.woff2');
+}
+@font-face {
+	font-family: fontNormal;
+	src: url('../../assets/webfont/GTPressuraMono-Light.woff2');
+}
+
+.footerContainer {
+  font-family: fontNormal;
+}
