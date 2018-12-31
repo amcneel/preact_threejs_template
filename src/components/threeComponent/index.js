@@ -1,34 +1,41 @@
-import React, { Component } from 'preact';
-import * as THREE from 'three';
-const WindowResize = require('three-window-resize');
+import React, { Component } from 'preact'
+import * as THREE from 'three'
+const WindowResize = require('three-window-resize')
+
+// import { TimelineMax } from "gsap/TweenMax";
+// import { createTextAnimation, createTweenScrubber } from '../mainAnimatedText';
+// import { init } from '../animatedImages';
+
+const TWEEN = require('@tweenjs/tween.js')
 
 /**
  * Camera stuff
  */
 const CAMERA_FOV = 75
-const CAMERA_NEAR = 0.1;
-const CAMERA_FAR = 1000;
-const CAMERA_Z = 10;
-let iniQ         // initial quaternion
-let endQ         // target quaternion
-let curQ         // temp quaternion during slerp
-let vec3         // generic vector object
-let tweenValue   // tweenable value 
+const CAMERA_NEAR = 0.1
+const CAMERA_FAR = 7000
+let camera_x = 0
+let camera_y = 0
+let camera_z = 10
 
 /**
  * colors
  */
-const startingMeshColor = '#433F81';
-const hoverMeshColor = '#30e1f4';
-const randomMeshColor = 'red';
+const startingMeshColor = '#433F81'
+const PLANE_MATERIAL = new THREE.MeshStandardMaterial({
+  color: 0xB4B8C5,
+  metalness: 0.4,
+  transparent: true,
+  opacity: 0.5,
+  wireframe: true
+})
+
 
 
 class ThreeScene extends Component{
-  constructor(props) {
-    super(props); 
-  }
-  componentDidMount(){
+  state = {}
 
+  componentDidMount(){
     const width = this.mount.clientWidth
     const height = this.mount.clientHeight
     //ADD SCENE
@@ -40,23 +47,48 @@ class ThreeScene extends Component{
       CAMERA_NEAR,
       CAMERA_FAR
     )
-
-    this.camera.position.z = CAMERA_Z;
-
+    this.camera.position.z = camera_z
+    //ADD LIGHTS
+    this.light = new THREE.AmbientLight(0xffffff, 1)
     
     //ADD RENDERER
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.renderer.setClearColor('#000000')
     this.renderer.setSize(width, height)
     this.mount.appendChild(this.renderer.domElement)
+
+    /**
+     * Add Initial Elements
+     */
+    //Materials
+    let material = new THREE.MeshBasicMaterial({ color: startingMeshColor, wireframe: true })
+      
     //ADD CUBE
     const geometry = new THREE.BoxGeometry(1, 1, 1)
-    let material = new THREE.MeshBasicMaterial({ color: startingMeshColor })
     this.cube = new THREE.Mesh(geometry, material)
-    this.scene.add(this.cube)
+    //ADD SPHERE
+    const sphereGeometry = new THREE.SphereGeometry(2, 20, 20)
+    this.sphere = new THREE.Mesh(sphereGeometry, material)
+    this.sphere.position.set(50, 50, 40)
+    //ADD GRID
+    const planeGeo = new THREE.PlaneBufferGeometry(10000, 10000, 30, 30)
+    this.plane = new THREE.Mesh(planeGeo, PLANE_MATERIAL)
+    this.plane.rotation.x = -105*Math.PI/180
+    this.plane.rotation.z = -90*Math.PI/180
+    this.plane.rotation.y = 0*Math.PI/180
+    this.plane.position.y = -100
     
-    WindowResize(this.renderer, this.camera)
+    //ADD OBJECTS TO SCENE
+    this.scene.add(this.cube)
+    this.scene.add(this.sphere)
+    this.scene.add(this.light)
+    this.scene.add(this.plane)
+    
+    // this.renderHomeText()
+    // this.renderAnimatedImages();
 
+    //RESIZE AND START
+    WindowResize(this.renderer, this.camera)
     this.start()
   }
   componentWillUnmount(){
@@ -73,10 +105,21 @@ class ThreeScene extends Component{
     cancelAnimationFrame(this.frameId)
   }
 
-  animate = () => {
+  rotateCube = () => {
     this.cube.rotation.x += 0.01
     this.cube.rotation.y += 0.01
     this.cube.rotation.z += 0.01
+  }
+  rotateSphere = () => {
+    this.sphere.rotation.x += 0.01
+    this.sphere.rotation.y += 0.01
+    this.sphere.rotation.z += 0.01
+  }
+
+  animate = () => {
+    this.rotateCube()
+    this.rotateSphere()
+    TWEEN.update()
     this.renderScene()
     this.frameId = window.requestAnimationFrame(this.animate)
   }
@@ -84,38 +127,61 @@ class ThreeScene extends Component{
     this.renderer.render(this.scene, this.camera)
   }
 
-  toggleColor = (hover) => {
-    let random = Math.random();
-    if (random < 0.02) {
-      this.cube.material = new THREE.MeshBasicMaterial({ color: randomMeshColor, wireframe: true })
-    }
-    else if (hover) {
-      this.cube.material = new THREE.MeshBasicMaterial({ color: hoverMeshColor, wireframe: true });
+  /**
+   * Helpersss
+   */
+  // FRONT PAGE TEXT SECTION
+  renderHomeText = () => {
+    
+  }
+  
+  // experiment
+  renderAnimatedImages = () => {
+    init(this.mount)
+  }
+
+  // working
+  toggleColor = (hover, color1, color2) => {
+    if (hover) {
+      this.plane.material = new THREE.MeshBasicMaterial({ color: color1, wireframe: true })
+      this.cube.material = new THREE.MeshBasicMaterial({ color: color2, wireframe: true })
     } else {
       this.cube.material = new THREE.MeshBasicMaterial({ color: startingMeshColor })
+      this.plane.material = PLANE_MATERIAL
     }
   }
 
   // set a new target for the camera
-moveCameraALittle = (euler, zoom) => {
-    // reset everything
-    endQ = new THREE.Quaternion()
-    iniQ = new THREE.Quaternion().copy(camera.quaternion)
-    curQ = new THREE.Quaternion()
-    vec3 = new THREE.Vector3()
-    tweenValue = 0
-
-    endQ.setFromEuler(euler)
-    TweenLite.to(this, 5, { tweenValue:1, cameraZoom:zoom, onUpdate:onSlerpUpdate })
-}
-
-  render() {
-      return(
-        <div
-          style={{ width: this.props.width, height: this.props.height }}
-          ref={(mount) => { this.mount = mount }}
-        />
-      )
+  moveCamera = (targetPos, easing) => {
+    let from = {
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z
     }
+    // save double clicks and such
+    if (targetPos.x === from.x && targetPos.y === from.y && targetPos.z === from.z) {
+      return
+    }
+    let t = new TWEEN.Tween(from)
+    .to(targetPos, 3000)
+    .easing(TWEEN.Easing.Quadratic.In)
+    .onUpdate((res) => {
+      this.camera.position.set(res.x, res.y, res.z)
+    })
+    .onComplete(() => {
+      // this.camera.lookAt(new THREE.Vector3(0, 0, 0))
+      console.log("complete ", this.camera.position)
+    })
+    .start()
   }
+
+  render(props, {}) {
+    return(
+      <div
+        style={{ width: props.width, height: props.height }}
+        ref={(mount) => { this.mount = mount }}
+      />
+    )
+  }
+}
 export default ThreeScene

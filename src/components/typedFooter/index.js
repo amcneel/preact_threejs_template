@@ -14,7 +14,7 @@ const TypedFooter = (props) => (
     <Typed
       typedRef={(typed) => { this.typed = typed } }
       style={ownStyles.typed}
-      strings={['Andrew McNeal', 'Andrew McNeil', 'Andrew McNe^800el']} 
+      strings={['Welcome', '...', '...loading']} 
       typeSpeed={80}
       smartBackspace={true}
       backDelay={600}
