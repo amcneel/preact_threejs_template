@@ -1,5 +1,7 @@
 import React, { Component } from 'preact'
 import * as THREE from 'three'
+import * as OBJLoader from 'three-obj-loader'
+OBJLoader(THREE)
 const WindowResize = require('three-window-resize')
 
 // import { TimelineMax } from "gsap/TweenMax";
@@ -36,6 +38,8 @@ class ThreeScene extends Component{
   state = {}
 
   componentDidMount(){
+    this.THREE = THREE
+
     const width = this.mount.clientWidth
     const height = this.mount.clientHeight
     //ADD SCENE
@@ -70,6 +74,24 @@ class ThreeScene extends Component{
     const sphereGeometry = new THREE.SphereGeometry(2, 20, 20)
     this.sphere = new THREE.Mesh(sphereGeometry, material)
     this.sphere.position.set(50, 50, 40)
+    // ADD LOGO OBJ
+    const loader = new this.THREE.OBJLoader()
+    loader.load(
+      '../../assets/logo.obj',
+      (obj) => {
+        obj.scale.set(50, 50, 50)
+        obj.rotation.set(90, 0, 0)
+        this.scene.add(obj)
+        this.logoObj = obj
+      },
+      (xhr) => {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' )
+      },
+      (err) => {
+        console.log("error: ", err)
+      }
+    )
+
     //ADD GRID
     const planeGeo = new THREE.PlaneBufferGeometry(10000, 10000, 30, 30)
     this.plane = new THREE.Mesh(planeGeo, PLANE_MATERIAL)
@@ -116,9 +138,18 @@ class ThreeScene extends Component{
     this.sphere.rotation.z += 0.01
   }
 
+  rotateLogo = () => {
+    // this.logoObj.rotation.x += 0.01
+    // this.logoObj.rotation.y += 0.01
+    this.logoObj.rotation.z += 0.02
+  }
+
   animate = () => {
     this.rotateCube()
     this.rotateSphere()
+    if (this.logoObj != null) {
+      this.rotateLogo()
+    }
     TWEEN.update()
     this.renderScene()
     this.frameId = window.requestAnimationFrame(this.animate)

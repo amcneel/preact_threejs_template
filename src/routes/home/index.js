@@ -68,11 +68,26 @@ class Home extends Component {
 	menuClickEvent = (pos) => {
 		this.hideMenu()
 		let targetPos
-		if (pos === 0) { targetPos = CAMERA_POS.HOME }
-		else if (pos === 1) { targetPos = CAMERA_POS.ABOUT }
-		else if (pos === 2) { targetPos = CAMERA_POS.PORTFOLIO }
-		else if (pos === 3) { targetPos = CAMERA_POS.INTERESTS }
-		else if (pos === 4) { targetPos = CAMERA_POS.CONTACT }
+		if (pos === 0) {
+			targetPos = CAMERA_POS.HOME
+			this.setState({ position: 0 })
+		}
+		else if (pos === 1) {
+			targetPos = CAMERA_POS.ABOUT
+			this.setState({ position: 1 })
+		}
+		else if (pos === 2) {
+			targetPos = CAMERA_POS.PORTFOLIO
+			this.setState({ position: 2 })
+		}
+		else if (pos === 3) {
+			targetPos = CAMERA_POS.INTERESTS
+			this.setState({ position: 3 })
+		}
+		else if (pos === 4) {
+			targetPos = CAMERA_POS.CONTACT
+			this.setState({ position: 4 })
+		}
 		this.threeComponent.moveCamera(targetPos)
 	}
 
